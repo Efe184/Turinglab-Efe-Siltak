@@ -1,3 +1,39 @@
+from __future__ import annotations
+from dataclasses import dataclass, field
+
+
+@dataclass
+class Configuration:
+    """Tek bir adımın anlık görüntüsü.
+
+    Attributes:
+        state: O anki durum adı.
+        tape: O anki şerit içeriği (string olarak).
+        head_position: Okuma/yazma kafasının pozisyonu.
+    """
+    state: str
+    tape: str
+    head_position: int
+
+
+@dataclass
+class RunResult:
+    """Bir çalıştırmanın sonucu.
+
+    Attributes:
+        accepted: Makine kabul durumuna ulaştıysa True.
+        reason: Sonlanma nedeni: 'accept', 'no_transition', 'timeout', 'head_out_of_bounds'.
+        final_tape: Son şerit içeriği.
+        steps: Toplam adım sayısı.
+        history: Her adımdaki Configuration listesi.
+    """
+    accepted: bool
+    reason: str
+    final_tape: str
+    steps: int
+    history: list[Configuration] = field(default_factory=list)
+
+
 class Tape:
     """Turing makinesi şeridi. Sparse dict[int, str] olarak temsil edilir."""
 
