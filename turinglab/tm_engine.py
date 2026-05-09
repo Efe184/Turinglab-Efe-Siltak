@@ -174,3 +174,102 @@ class SingleTapeTM:
             reject_states=reject_states,
             transitions=transitions,
         )
+
+    def run(
+        self,
+        input_string: str,
+        max_steps: int = 1000,
+        verbose: bool = False,
+    ) -> RunResult:
+        """Makineyi verilen girdiyle çalıştır.
+
+        Args:
+            input_string: Şeride yazılacak başlangıç girdisi.
+            max_steps: İzin verilen maksimum adım sayısı.
+            verbose: True ise her adımı stdout'a yazdır.
+
+        Returns:
+            Çalıştırma sonucunu içeren RunResult.
+        """
+        tape = Tape(input_string, self.blank)
+        state = self.start_state
+        head = 0
+        history: list[Configuration] = []
+
+        for step in range(max_steps + 1):
+            tape_str = tape.get_tape_str()
+            history.append(Configuration(state=state, tape=tape_str, head_position=head))
+
+            if verbose:
+                lo = min(tape._cells) if tape._cells else 0
+                relative = head - lo
+                chars = list(tape_str)
+                if 0 <= relative < len(chars):
+                    display = (
+                        "".join(chars[:relative])
+                        + f"[{chars[relative]}]"
+                        + "".join(chars[relative + 1:])
+                    )
+                else:
+                    display = tape_str
+                print(f"Adım {step} | Durum: {state} | Şerit: {display}")
+
+            if state in self.accept_states:
+                return RunResult(
+                    accepted=True,
+                    reason="accept",
+                    final_tape=tape_str,
+                    steps=step,
+                    history=history,
+                )
+
+            if state in self.reject_states:
+                return RunResult(
+                    accepted=False,
+                    reason="reject",
+                    final_tape=tape_str,
+                    steps=step,
+                    history=history,
+                )
+
+            symbol = tape.read(head)
+            key = (state, symbol)
+
+            if key not in self.transitions:
+                return RunResult(
+                    accepted=False,
+                    reason="no_transition",
+                    final_tape=tape_str,
+                    steps=step,
+                    history=history,
+                )
+
+            write_sym, direction, new_state = self.transitions[key]
+            tape.write(head, write_sym)
+
+            if direction == "R":
+                head += 1
+            elif direction == "L":
+                head -= 1
+
+            if verbose:
+                print(f"  -> Yaz: {write_sym} | Hareket: {direction} | Yeni Durum: {new_state}")
+
+            state = new_state
+
+            if head < 0:
+                return RunResult(
+                    accepted=False,
+                    reason="head_out_of_bounds",
+                    final_tape=tape.get_tape_str(),
+                    steps=step + 1,
+                    history=history,
+                )
+
+        return RunResult(
+            accepted=False,
+            reason="timeout",
+            final_tape=tape.get_tape_str(),
+            steps=max_steps,
+            history=history,
+        )
