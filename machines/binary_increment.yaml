@@ -2,8 +2,9 @@ name: binary_increment
 description: "Ikili sayıyı 1 artırır. Örnek: 1011 -> 1100"
 
 states:
+  - q_right
   - carry
-  - done
+  - q_return
   - q_accept
 
 input_alphabet:
@@ -17,7 +18,7 @@ tape_alphabet:
 
 blank: "B"
 
-start_state: carry
+start_state: q_right
 
 accept_states:
   - q_accept
@@ -25,19 +26,27 @@ accept_states:
 reject_states: []
 
 transitions:
-  # carry durumunda sağdan sola tarama
+  # Şeridin sonuna kadar ilerle
+  q_right:
+    "0": ["0", "R", "q_right"]
+    "1": ["1", "R", "q_right"]
+    "B": ["B", "L", "carry"]
+
+  # Sağdan sola: 1'leri 0'a çevir (elde taşı)
+  # 0 bulunca 1 yaz, başa dön, kabul et
+  # Blank: tüm basamaklar 1'di, buraya 1 yaz, başa dön
   carry:
     "1": ["0", "L", "carry"]
-    "0": ["1", "L", "done"]
-    "B": ["1", "R", "done"]
+    "0": ["1", "L", "q_return"]
+    "B": ["1", "L", "q_return"]
 
-  # done durumunda sola gitmeye devam et, sonra sağa geç
-  done:
-    "0": ["0", "L", "done"]
-    "1": ["1", "L", "done"]
+  # Başa dön (blank'e kadar sola git)
+  q_return:
+    "0": ["0", "L", "q_return"]
+    "1": ["1", "L", "q_return"]
     "B": ["B", "R", "q_accept"]
 
-  # q_accept: kabul durumu, şeridi sağa tara
+  # Kabul durumu
   q_accept:
     "0": ["0", "R", "q_accept"]
     "1": ["1", "R", "q_accept"]

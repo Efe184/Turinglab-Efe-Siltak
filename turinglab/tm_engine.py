@@ -257,15 +257,6 @@ class SingleTapeTM:
 
             state = new_state
 
-            if head < 0:
-                return RunResult(
-                    accepted=False,
-                    reason="head_out_of_bounds",
-                    final_tape=tape.get_tape_str(),
-                    steps=step + 1,
-                    history=history,
-                )
-
         return RunResult(
             accepted=False,
             reason="timeout",
