@@ -1,0 +1,122 @@
+name: unary_to_binary
+description: >
+  Unary sayiyi binary'e cevirir.
+  Girdi: n adet '1' (ornek: '111' = 3).
+  Cikti: binary karsiligi (ornek: '11').
+  Yontem: Her turda en soldaki '1'i X ile isaretler,
+  '#' ayracinin sagindaki binary bolumunu 1 arttirir.
+  Tum '1'ler islenince X ve '#'i siler, binary kalir.
+
+states:
+  - q_start
+  - q_go_end
+  - q_go_head
+  - q_mark
+  - q_find_sep
+  - q_bin_end
+  - q_carry
+  - q_new_msb
+  - q_shift0
+  - q_shift1
+  - q_back
+  - q_back2
+  - q_erase
+  - q_erase_left
+  - q_erase_x
+  - q_af
+
+input_alphabet:
+  - "1"
+
+tape_alphabet:
+  - "1"
+  - "0"
+  - "B"
+  - "X"
+  - "#"
+
+blank: "B"
+
+start_state: q_start
+
+accept_states:
+  - q_af
+
+reject_states: []
+
+transitions:
+  q_start:
+    "B": ["0", "R", "q_af"]
+    "1": ["1", "R", "q_go_end"]
+
+  q_go_end:
+    "1": ["1", "R", "q_go_end"]
+    "B": ["#", "L", "q_go_head"]
+
+  q_go_head:
+    "1": ["1", "L", "q_go_head"]
+    "#": ["#", "L", "q_go_head"]
+    "B": ["B", "R", "q_mark"]
+
+  q_mark:
+    "X": ["X", "R", "q_mark"]
+    "1": ["X", "R", "q_find_sep"]
+    "#": ["#", "R", "q_erase"]
+
+  q_find_sep:
+    "X": ["X", "R", "q_find_sep"]
+    "1": ["1", "R", "q_find_sep"]
+    "#": ["#", "R", "q_bin_end"]
+
+  q_bin_end:
+    "0": ["0", "R", "q_bin_end"]
+    "1": ["1", "R", "q_bin_end"]
+    "B": ["B", "L", "q_carry"]
+
+  q_carry:
+    "1": ["0", "L", "q_carry"]
+    "0": ["1", "L", "q_back"]
+    "B": ["1", "L", "q_back"]
+    "#": ["#", "R", "q_new_msb"]
+
+  q_new_msb:
+    "B": ["1", "L", "q_back"]
+    "0": ["1", "R", "q_shift0"]
+    "1": ["1", "R", "q_shift1"]
+
+  q_shift0:
+    "0": ["0", "R", "q_shift0"]
+    "1": ["1", "R", "q_shift0"]
+    "B": ["0", "L", "q_back"]
+
+  q_shift1:
+    "0": ["1", "R", "q_shift0"]
+    "1": ["1", "R", "q_shift1"]
+    "B": ["1", "L", "q_back"]
+
+  q_back:
+    "0": ["0", "L", "q_back"]
+    "1": ["1", "L", "q_back"]
+    "#": ["#", "L", "q_back2"]
+
+  q_back2:
+    "X": ["X", "L", "q_back2"]
+    "1": ["1", "L", "q_back2"]
+    "B": ["B", "R", "q_mark"]
+
+  q_erase:
+    "0": ["0", "L", "q_erase_left"]
+    "1": ["1", "L", "q_erase_left"]
+    "B": ["B", "L", "q_erase_left"]
+
+  q_erase_left:
+    "#": ["B", "L", "q_erase_x"]
+
+  q_erase_x:
+    "X": ["B", "L", "q_erase_x"]
+    "B": ["B", "R", "q_af"]
+
+  q_af:
+    "0": ["0", "R", "q_af"]
+    "1": ["1", "R", "q_af"]
+    "B": ["B", "R", "q_af"]
