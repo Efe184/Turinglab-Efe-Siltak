@@ -1,0 +1,202 @@
+name: binary_compare
+description: >
+  Iki ikili sayiyi karsilastirir. Girdi: "A#B" formatinda iki binary sayi.
+  Kabul: A > B ise (birinci sayi ikinciden buyukse).
+  Ret: A <= B ise (esit veya kucukse).
+  Yontem: Once uzunluklari karsilastirir (uzun olan buyuktur).
+  Esit uzunlukta ise bit bit soldan saga karsilastirir.
+  Isaretleyiciler: P=sol-0, Q=sol-1, R=sag-0, S=sag-1, X/Y=islenmis.
+
+states:
+  - q0
+  - q_bk
+  - q_ll
+  - q_ld
+  - q_lr
+  - q_rr
+  - q_cmp_bk
+  - q_cl
+  - q_cg0
+  - q_cg1
+  - q_cr0
+  - q_cr1
+  - q_cb
+  - q_acc
+  - q_rej
+
+input_alphabet:
+  - "0"
+  - "1"
+  - "#"
+
+tape_alphabet:
+  - "0"
+  - "1"
+  - "#"
+  - "P"
+  - "Q"
+  - "R"
+  - "S"
+  - "X"
+  - "Y"
+  - "B"
+
+blank: "B"
+
+start_state: q0
+
+accept_states:
+  - q_acc
+
+reject_states:
+  - q_rej
+
+transitions:
+  # Sona git
+  q0:
+    "0": ["0", "R", "q0"]
+    "1": ["1", "R", "q0"]
+    "#": ["#", "R", "q0"]
+    "P": ["P", "R", "q0"]
+    "Q": ["Q", "R", "q0"]
+    "R": ["R", "R", "q0"]
+    "S": ["S", "R", "q0"]
+    "X": ["X", "R", "q0"]
+    "Y": ["Y", "R", "q0"]
+    "B": ["B", "L", "q_bk"]
+
+  # Basa git
+  q_bk:
+    "0": ["0", "L", "q_bk"]
+    "1": ["1", "L", "q_bk"]
+    "#": ["#", "L", "q_bk"]
+    "P": ["P", "L", "q_bk"]
+    "Q": ["Q", "L", "q_bk"]
+    "R": ["R", "L", "q_bk"]
+    "S": ["S", "L", "q_bk"]
+    "X": ["X", "L", "q_bk"]
+    "Y": ["Y", "L", "q_bk"]
+    "B": ["B", "R", "q_ll"]
+
+  # Sol kisimdan bit al (P=0, Q=1)
+  q_ll:
+    "P": ["P", "R", "q_ll"]
+    "Q": ["Q", "R", "q_ll"]
+    "0": ["P", "R", "q_lr"]
+    "1": ["Q", "R", "q_lr"]
+    "#": ["#", "R", "q_ld"]
+
+  # Sol bitti: sag'da bit var mi?
+  q_ld:
+    "R": ["R", "R", "q_ld"]
+    "S": ["S", "R", "q_ld"]
+    "0": ["0", "R", "q_rej"]
+    "1": ["1", "R", "q_rej"]
+    "B": ["B", "L", "q_cmp_bk"]
+
+  # Sol bit alindi, sag'a git
+  q_lr:
+    "0": ["0", "R", "q_lr"]
+    "1": ["1", "R", "q_lr"]
+    "P": ["P", "R", "q_lr"]
+    "Q": ["Q", "R", "q_lr"]
+    "#": ["#", "R", "q_rr"]
+
+  # Sag'dan bit al (R=0, S=1)
+  q_rr:
+    "R": ["R", "R", "q_rr"]
+    "S": ["S", "R", "q_rr"]
+    "0": ["R", "L", "q_bk"]
+    "1": ["S", "L", "q_bk"]
+    "B": ["B", "R", "q_acc"]
+
+  # Esit uzunluk: basa don
+  q_cmp_bk:
+    "P": ["P", "L", "q_cmp_bk"]
+    "Q": ["Q", "L", "q_cmp_bk"]
+    "R": ["R", "L", "q_cmp_bk"]
+    "S": ["S", "L", "q_cmp_bk"]
+    "X": ["X", "L", "q_cmp_bk"]
+    "Y": ["Y", "L", "q_cmp_bk"]
+    "#": ["#", "L", "q_cmp_bk"]
+    "0": ["0", "L", "q_cmp_bk"]
+    "1": ["1", "L", "q_cmp_bk"]
+    "B": ["B", "R", "q_cl"]
+
+  # Sol kisimdan P veya Q al
+  q_cl:
+    "X": ["X", "R", "q_cl"]
+    "P": ["X", "R", "q_cg0"]
+    "Q": ["X", "R", "q_cg1"]
+    "#": ["#", "R", "q_rej"]
+    "B": ["B", "R", "q_rej"]
+
+  # Sol=0, sag'a git
+  q_cg0:
+    "X": ["X", "R", "q_cg0"]
+    "P": ["P", "R", "q_cg0"]
+    "Q": ["Q", "R", "q_cg0"]
+    "0": ["0", "R", "q_cg0"]
+    "1": ["1", "R", "q_cg0"]
+    "#": ["#", "R", "q_cr0"]
+
+  # Sol=0 ile sag biti karsilastir
+  q_cr0:
+    "Y": ["Y", "R", "q_cr0"]
+    "R": ["Y", "L", "q_cb"]
+    "S": ["Y", "R", "q_rej"]
+    "B": ["B", "R", "q_rej"]
+
+  # Sol=1, sag'a git
+  q_cg1:
+    "X": ["X", "R", "q_cg1"]
+    "P": ["P", "R", "q_cg1"]
+    "Q": ["Q", "R", "q_cg1"]
+    "0": ["0", "R", "q_cg1"]
+    "1": ["1", "R", "q_cg1"]
+    "#": ["#", "R", "q_cr1"]
+
+  # Sol=1 ile sag biti karsilastir
+  q_cr1:
+    "Y": ["Y", "R", "q_cr1"]
+    "R": ["Y", "R", "q_acc"]
+    "S": ["Y", "L", "q_cb"]
+    "B": ["B", "R", "q_rej"]
+
+  # Geri don (basa)
+  q_cb:
+    "X": ["X", "L", "q_cb"]
+    "Y": ["Y", "L", "q_cb"]
+    "P": ["P", "L", "q_cb"]
+    "Q": ["Q", "L", "q_cb"]
+    "R": ["R", "L", "q_cb"]
+    "S": ["S", "L", "q_cb"]
+    "#": ["#", "L", "q_cb"]
+    "0": ["0", "L", "q_cb"]
+    "1": ["1", "L", "q_cb"]
+    "B": ["B", "R", "q_cl"]
+
+  # Terminal durumlar
+  q_acc:
+    "0": ["0", "R", "q_acc"]
+    "1": ["1", "R", "q_acc"]
+    "#": ["#", "R", "q_acc"]
+    "P": ["P", "R", "q_acc"]
+    "Q": ["Q", "R", "q_acc"]
+    "R": ["R", "R", "q_acc"]
+    "S": ["S", "R", "q_acc"]
+    "X": ["X", "R", "q_acc"]
+    "Y": ["Y", "R", "q_acc"]
+    "B": ["B", "R", "q_acc"]
+
+  q_rej:
+    "0": ["0", "R", "q_rej"]
+    "1": ["1", "R", "q_rej"]
+    "#": ["#", "R", "q_rej"]
+    "P": ["P", "R", "q_rej"]
+    "Q": ["Q", "R", "q_rej"]
+    "R": ["R", "R", "q_rej"]
+    "S": ["S", "R", "q_rej"]
+    "X": ["X", "R", "q_rej"]
+    "Y": ["Y", "R", "q_rej"]
+    "B": ["B", "R", "q_rej"]
