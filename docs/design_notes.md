@@ -54,7 +54,27 @@ Her tur sol taraftan bir bit, sağ taraftan bir bit seçilirken şerit boyunca i
 
 ## TM-3: Dizgi Kopyalayıcı (`string_copy.yaml`)
 
-*(Adım 16'da eklenecek)*
+### 1. Strateji
+
+Makine şeridi iki bölgeye ayırır: solda orijinal string, sağda `#` ayracından sonra kopyası. Her turda en soldaki işlenmemiş `a`'yı `A`'ya, `b`'yi `C`'ye dönüştürür (işlendiğini işaretlemek için). Ardından `#`'in en sağına gidip o karakterin kopyasını yazar, basa döner. Tüm karakterler işlenince `A` ve `C`'leri geri `a` ve `b`'ye çevirerek makine kabul eder.
+
+### 2. Durum Sayısı
+
+12 durum kullanıldı. Her karakter (`a`, `b`) için ayrı kopyalama durumları gerekti (`q_copy_a`, `q_copy_b`, `q_write_a`, `q_write_b`). Alfabeyi genişletseydik (örneğin 3 karakter), her biri için iki ek durum eklenecekti — durum sayısı alfabe boyutuyla doğrusal büyür.
+
+### 3. Şerit Alfabesi Seçimi
+
+`A` ve `C` büyük harf işaretleyicileri seçildi çünkü `B` zaten blank olarak rezerve. `B_marked` gibi çok karakterli etiket kullanılamaz; her şerit sembolü tek karakter olmalıdır. `#` ayracı iki bölgeyi birbirinden ayırır; olmadan kafa kopyalanmış bölgede mi yoksa orijinalde mi olduğunu bilemezdi.
+
+### 4. Karmaşıklık
+
+Girdi uzunluğu `n` iken her tur şeridi yaklaşık `2n` tarar (sola ve sağa). `n` tur yapıldığından toplam **O(n²)** adım. Son temizleme (A/C → a/b) O(n) ek adım ekler.
+
+### 5. Hata Ayıklama Hikâyesi
+
+İlk tasarımda `q0` durumu hem ilk turu hem sonraki turları aynı şekilde yönetiyordu. Ancak ilk turda henüz `#` yokken `q_go_end_init` sona gidip `#` ekliyordu; sonraki turlar ise varolan `#`'i geçip kopyalama bölgesinin sonuna gitmeliydi. Bu ayrım yapılmadığında `#`'in üzerine tekrar `#` yazılıyor, sonuç `ab##ab` şeklinde bozuluyordu. `q_go_end_init` ve `q_go_sep_end_init` durumları ayrıştırılarak düzeltildi.
+
+---
 
 ---
 
