@@ -1,0 +1,131 @@
+name: string_copy
+description: >
+  Girdi stringini kopyalar. Ornek: 'ab' -> 'ab#ab'.
+  Yontem: Her turda en soldaki islenmemis 'a' veya 'b'yi
+  buyuk harfle isaretler (A veya C), '#' ayracinin sagindaki
+  kopyaya karakteri ekler, geri doner.
+  Tum karakterler islendikten sonra A/C'leri geri a/b'ye cevirir.
+
+states:
+  - q0
+  - q_go_end_init
+  - q_go_sep_end_init
+  - q_find_next
+  - q_copy_a
+  - q_copy_b
+  - q_write_a
+  - q_write_b
+  - q_bk
+  - q_done
+  - q_acc
+  - q_af
+
+input_alphabet:
+  - "a"
+  - "b"
+
+tape_alphabet:
+  - "a"
+  - "b"
+  - "B"
+  - "#"
+  - "A"
+  - "C"
+
+blank: "B"
+
+start_state: q0
+
+accept_states:
+  - q_af
+
+reject_states: []
+
+transitions:
+  # Bos girdi veya ilk tur baslangiç
+  q0:
+    "B": ["#", "R", "q_af"]
+    "a": ["a", "R", "q_go_end_init"]
+    "b": ["b", "R", "q_go_end_init"]
+    "A": ["A", "R", "q_find_next"]
+    "C": ["C", "R", "q_find_next"]
+    "#": ["#", "R", "q_af"]
+
+  # Sona git, # koy (ilk tur)
+  q_go_end_init:
+    "a": ["a", "R", "q_go_end_init"]
+    "b": ["b", "R", "q_go_end_init"]
+    "A": ["A", "R", "q_go_end_init"]
+    "C": ["C", "R", "q_go_end_init"]
+    "B": ["#", "R", "q_go_sep_end_init"]
+    "#": ["#", "R", "q_go_sep_end_init"]
+
+  # # dan sonra kopyalanan kismin sonuna git
+  q_go_sep_end_init:
+    "a": ["a", "R", "q_go_sep_end_init"]
+    "b": ["b", "R", "q_go_sep_end_init"]
+    "B": ["B", "L", "q_bk"]
+
+  # En soldaki islenmemis a/b'yi bul
+  q_find_next:
+    "A": ["A", "R", "q_find_next"]
+    "C": ["C", "R", "q_find_next"]
+    "a": ["A", "R", "q_copy_a"]
+    "b": ["C", "R", "q_copy_b"]
+    "#": ["#", "R", "q_done"]
+
+  # a'yi kopyala: # nin sonuna git, 'a' yaz
+  q_copy_a:
+    "a": ["a", "R", "q_copy_a"]
+    "b": ["b", "R", "q_copy_a"]
+    "A": ["A", "R", "q_copy_a"]
+    "C": ["C", "R", "q_copy_a"]
+    "#": ["#", "R", "q_write_a"]
+
+  q_write_a:
+    "a": ["a", "R", "q_write_a"]
+    "b": ["b", "R", "q_write_a"]
+    "B": ["a", "L", "q_bk"]
+
+  # b'yi kopyala
+  q_copy_b:
+    "a": ["a", "R", "q_copy_b"]
+    "b": ["b", "R", "q_copy_b"]
+    "A": ["A", "R", "q_copy_b"]
+    "C": ["C", "R", "q_copy_b"]
+    "#": ["#", "R", "q_write_b"]
+
+  q_write_b:
+    "a": ["a", "R", "q_write_b"]
+    "b": ["b", "R", "q_write_b"]
+    "B": ["b", "L", "q_bk"]
+
+  # Basa git
+  q_bk:
+    "a": ["a", "L", "q_bk"]
+    "b": ["b", "L", "q_bk"]
+    "A": ["A", "L", "q_bk"]
+    "C": ["C", "L", "q_bk"]
+    "#": ["#", "L", "q_bk"]
+    "B": ["B", "R", "q_find_next"]
+
+  # Bitti: A/C'leri geri cevir
+  q_done:
+    "a": ["a", "R", "q_done"]
+    "b": ["b", "R", "q_done"]
+    "B": ["B", "L", "q_acc"]
+
+  q_acc:
+    "A": ["a", "L", "q_acc"]
+    "C": ["b", "L", "q_acc"]
+    "a": ["a", "L", "q_acc"]
+    "b": ["b", "L", "q_acc"]
+    "#": ["#", "L", "q_acc"]
+    "B": ["B", "R", "q_af"]
+
+  # Kabul
+  q_af:
+    "a": ["a", "R", "q_af"]
+    "b": ["b", "R", "q_af"]
+    "#": ["#", "R", "q_af"]
+    "B": ["B", "R", "q_af"]
