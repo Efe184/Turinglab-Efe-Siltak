@@ -80,4 +80,22 @@ Girdi uzunluğu `n` iken her tur şeridi yaklaşık `2n` tarar (sola ve sağa). 
 
 ## TM-4: Parantez Denge Kontrolü (`student_choice.yaml`)
 
-*(Adım 18'de eklenecek)*
+### 1. Strateji
+
+Makine, açık parantez sayısını doğrudan durum numarasıyla temsil eder (`q_c0` = 0 açık, `q_c1` = 1 açık, ..., `q_c8` = 8 açık). Şeridi soldan sağa tek geçişte okur: `(` görünce durum numarası bir artar, `)` görünce bir azalır. `q_c0`'da `)` görülürse reject, herhangi bir durumda şerit sonuna (B) gelinirse durum `q_c0` ise accept, değilse reject.
+
+### 2. Durum Sayısı
+
+11 durum kullanıldı (9 sayaç durumu + accept + reject). Maksimum iç içe derinlik 8 ile sınırlandı; teoride sınırsız derinlik için sonsuz durum gerekir, bu da tek şeritli TM'nin sayacı temsil etmek için şeridi kullanması gerektiği anlamına gelir. Bu tasarım sonlu otomat (FA) sınırındadır; gerçek bir TM için şerit tabanlı sayaç gerekirdi.
+
+### 3. Şerit Alfabesi Seçimi
+
+Yalnızca `(`, `)` ve `B` (blank) kullanıldı. İşaretleyici sembol gerekmiyor çünkü durum, sayaç bilgisini taşıyor; şeridi değiştirmeye gerek yok.
+
+### 4. Karmaşıklık
+
+Tek soldan sağa geçiş: **O(n)** adım (n = giriş uzunluğu). Bu, tüm TM'ler içinde en verimli olanıdır.
+
+### 5. Hata Ayıklama Hikâyesi
+
+İlk tasarımda `q_c0` blank (`B`) gördüğünde `q_acc`'ye geçiyordu ama `q_acc` durumu transition listesinde yoktu; makine `no_transition` hatası veriyordu. Accept ve reject durumlarının geçiş tablosuna eklenmesi (kendine döngü) gerektiği, motor tarafından durumun accept listesinde olduğu görülünce zaten durulduğundan gerekli olmasa da bazı giriş kalıplarında sorun çıkardığı keşfedildi. Terminal durumların geçiş tablosuna dahil edilmesiyle düzeltildi.
