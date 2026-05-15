@@ -1,0 +1,108 @@
+name: student_choice
+description: >
+  Parantez denge kontrolu. Kabul: dengeli parantez dizileri.
+  Ret: dengesiz diziler.
+  Ornek kabul: "()", "(()())", "(())".
+  Ornek ret: "(()", ")(", ")(".
+  Yontem: Durum = acik parantez sayaci. '(' gorunde say artir,
+  ')' gorunde say azalt. Sifirdan azalirsa reject.
+  Sona gelinde sayac sifirsa accept, degilse reject.
+  Maksimum 8 ic ice parantez desteklenir.
+
+states:
+  - q_c0
+  - q_c1
+  - q_c2
+  - q_c3
+  - q_c4
+  - q_c5
+  - q_c6
+  - q_c7
+  - q_c8
+  - q_acc
+  - q_rej
+
+input_alphabet:
+  - "("
+  - ")"
+
+tape_alphabet:
+  - "("
+  - ")"
+  - "B"
+
+blank: "B"
+
+start_state: q_c0
+
+accept_states:
+  - q_acc
+
+reject_states:
+  - q_rej
+
+transitions:
+  # Derinlik 0: bos veya dengeli
+  q_c0:
+    "(": ["(", "R", "q_c1"]
+    ")": [")", "R", "q_rej"]
+    "B": ["B", "R", "q_acc"]
+
+  # Derinlik 1
+  q_c1:
+    "(": ["(", "R", "q_c2"]
+    ")": [")", "R", "q_c0"]
+    "B": ["B", "R", "q_rej"]
+
+  # Derinlik 2
+  q_c2:
+    "(": ["(", "R", "q_c3"]
+    ")": [")", "R", "q_c1"]
+    "B": ["B", "R", "q_rej"]
+
+  # Derinlik 3
+  q_c3:
+    "(": ["(", "R", "q_c4"]
+    ")": [")", "R", "q_c2"]
+    "B": ["B", "R", "q_rej"]
+
+  # Derinlik 4
+  q_c4:
+    "(": ["(", "R", "q_c5"]
+    ")": [")", "R", "q_c3"]
+    "B": ["B", "R", "q_rej"]
+
+  # Derinlik 5
+  q_c5:
+    "(": ["(", "R", "q_c6"]
+    ")": [")", "R", "q_c4"]
+    "B": ["B", "R", "q_rej"]
+
+  # Derinlik 6
+  q_c6:
+    "(": ["(", "R", "q_c7"]
+    ")": [")", "R", "q_c5"]
+    "B": ["B", "R", "q_rej"]
+
+  # Derinlik 7
+  q_c7:
+    "(": ["(", "R", "q_c8"]
+    ")": [")", "R", "q_c6"]
+    "B": ["B", "R", "q_rej"]
+
+  # Derinlik 8 (maksimum)
+  q_c8:
+    "(": ["(", "R", "q_rej"]
+    ")": [")", "R", "q_c7"]
+    "B": ["B", "R", "q_rej"]
+
+  # Terminal durumlar
+  q_acc:
+    "(": ["(", "R", "q_acc"]
+    ")": [")", "R", "q_acc"]
+    "B": ["B", "R", "q_acc"]
+
+  q_rej:
+    "(": ["(", "R", "q_rej"]
+    ")": [")", "R", "q_rej"]
+    "B": ["B", "R", "q_rej"]
