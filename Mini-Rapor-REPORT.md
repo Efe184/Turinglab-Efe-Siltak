@@ -24,6 +24,15 @@ print(result.accepted, result.final_tape.strip("B"))  # True  1100
 
 Proje tamamen Python 3.13 ile yazılmış; yalnızca PyYAML ve pytest bağımlılıkları kullanılmıştır.
 
+
+tm2 = SingleTapeTM.from_yaml("machines/student_choice.yaml")
+print(tm2.run("(()())").accepted)
+print(tm2.run("(())").accepted)
+print(tm2.run("(()").accepted)
+print(tm2.run(")(").accepted)
+
+exit()
+python -m pytest tests/ -v
 ---
 
 ## 2. Mimari
